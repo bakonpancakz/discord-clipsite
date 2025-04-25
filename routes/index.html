@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/gif" href="data:image/gif;base64,R0lGODlhIAAnAPIAAAAAAGQsOa0uSd1Obaw2Tcmvsq95hwAAACH5BAUAAAAALAAAAAAgACcAAAP/CLrcMw2USCt4dNqtYCwaZwlCA4LiSAqEcqIpQzzz87xhau88aNiwxYBAHLB4yEeANAgKV4IlLWkLLA2/CIFkDdgE1Ed05ZFxpUZSjWkjWMG5RfSdhrLY4gABS9nSV1tMBnZjYH1zUFiABYMrAFYEcQpngESBe28rkGVmmXOQanqBJUslFHMAagYBBiADWAVbC0sjAXKROCeyMbaTAq25BaYxDb/BBsQVVljMyRVuzMvIzguMrD7MfNQAWMuMrc3bDNnWreILsN/c5uLp37YGROLHCnrTya/M3xjcTiJFbbD4qZasi0E9Xc5xO9hNoQQYJxy6COFvHsWK1LStu3eODtG4XgqtMBDpkGQ9EQkAADs=">
+    <title>Clips</title>
+    <style>
+        :root {
+            --background-tertiary: #000000;
+            --background-secondary: #181818;
+            --element-accent: #ff005b;
+            --element-border: #363636;
+            --element-thickness: 1px;
+            --transition-time: 200ms;
+            --text-color: #f0f0f0;
+            --text-error: #ff0080;
+        }
+
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            background: radial-gradient(circle, var(--background-tertiary) 50%, var(--background-secondary));
+        }
+
+        p,
+        a,
+        button {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 400;
+            font-style: normal;
+            color: var(--text-color);
+        }
+
+        .nowrap {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .centered {
+            width: fit-content;
+            height: fit-content;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .flex {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon {
+            height: 24px;
+            fill: var(--text-color);
+        }
+
+        .poppin>* {
+            animation: kf-poppin linear var(--transition-time);
+        }
+
+        @keyframes kf-poppin {
+            0% {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            100% {
+                opacity: 100;
+                transform: translateY(0);
+            }
+        }
+
+        /* Layout */
+        div.navigation-spacer {
+            height: 56px;
+        }
+
+        div.navigation {
+            position: fixed;
+            top: 0;
+            right: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            display: flex;
+            gap: 8px;
+            justify-content: right;
+        }
+
+        div.navigation-user {
+            display: flex;
+            align-items: center;
+            border-radius: 16px;
+            background-color: var(--background-secondary);
+            border: var(--element-thickness) var(--element-border) solid;
+        }
+
+        div.navigation-user img {
+            border-radius: 16px;
+            height: 32px;
+            width: 32px;
+            background-color: var(--element-border);
+        }
+
+        div.navigation-user a {
+            text-decoration: none;
+            padding: 0 8px 0 4px;
+            width: 100px;
+            min-width: fit-content;
+            text-align: center;
+            transition: width ease-in var(--transition-time);
+        }
+
+        a.navigation-action {
+            border-radius: 100%;
+            width: 32px;
+            height: 32px;
+            text-align: center;
+            text-decoration: none;
+            box-sizing: border-box;
+            padding: 3px;
+            background-color: var(--background-secondary);
+            border: var(--element-thickness) var(--element-border) solid;
+        }
+
+        div.content {
+            padding: 12px;
+            padding-top: 0;
+            box-sizing: border-box;
+        }
+
+        /* Playback */
+        div.player {
+            background-color: rgb(0, 0, 0, .8);
+            position: fixed;
+            z-index: 999;
+            width: 100vw;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            transition: opacity ease-in-out var(--transition-time);
+            display: none;
+            opacity: 0;
+        }
+
+        div.wrapper-video {
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        video#player-video {
+            border: var(--element-thickness) var(--element-border) solid;
+            background: var(--background-secondary);
+            border-radius: 8px;
+            height: 100%;
+            outline: none;
+            aspect-ratio: 16 / 9;
+            max-width: 1280px;
+            width: 100vw;
+        }
+
+        button#player-close {
+            width: 64px;
+            height: 64px;
+            font-size: 40px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: color ease-in-out var(--transition-time);
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
+
+        button#player-close:hover {
+            color: var(--element-accent);
+        }
+
+        /* Widgets */
+        svg.widget-throbber {
+            height: 64px;
+            width: 64px;
+        }
+
+        div.widget-alert {
+            text-align: center;
+        }
+
+        div.widget-videos {
+            display: grid;
+            gap: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        /* Video Item */
+        div.item-video {
+            border: var(--element-thickness) solid var(--element-border);
+            border-radius: 8px;
+            aspect-ratio: 16/9;
+            width: 100%;
+            display: grid;
+            align-items: end;
+        }
+
+        div.item-video>* {
+            grid-row: 1;
+            grid-column: 1;
+            width: 100%;
+            height: 100%;
+            aspect-ratio: 16/9;
+        }
+
+
+        img.video-thumbnail {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity ease-in-out 1s;
+        }
+
+        div.video-processing {
+            display: grid;
+            border-radius: 8px;
+            user-select: none;
+            justify-content: center;
+            align-content: center;
+            text-align: center;
+            gap: 8px;
+            opacity: 0;
+            user-select: none;
+            transition: opacity ease-in var(--transition-time);
+        }
+
+        div.video-progress-background {
+            width: 160px;
+            height: 4px;
+            background-color: var(--element-border);
+        }
+
+        div.video-progress-foreground {
+            width: 0%;
+            height: 100%;
+            max-width: 100%;
+            background-color: var(--element-accent);
+        }
+
+        div.video-details {
+            opacity: 0;
+            transition: opacity ease-in var(--transition-time);
+            position: relative;
+            height: fit-content;
+            width: 100%;
+            height: 64px;
+            padding: 8px;
+            border-radius: 0 0 8px 8px;
+            box-sizing: border-box;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(0, 0, 0, 1) 100%);
+            display: grid;
+            justify-items: center;
+            align-content: center;
+            user-select: none;
+        }
+
+        div.item-video:hover div.video-details {
+            opacity: 1;
+        }
+
+        /* Target Desktop Resolution is 1920x1080 */
+        /* Laptop */
+        @media only screen and (max-width: 1366px) {
+            div.widget-videos {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Tablet */
+        @media only screen and (max-width: 1024px) {
+            div.widget-videos {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Mobile */
+        @media only screen and (max-width: 640px) {
+            div.widget-videos {
+                grid-template-columns: repeat(1, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <div class="navigation-spacer"></div>
+    <div class="navigation">
+
+        <!-- User Actions -->
+        <input id="upload-input" type="file" accept="video/mp4, video/webm, video/mov" hidden>
+        <a id="upload-activate" class="navigation-action" href="javascript:beginUpload()" hidden>
+            <p>&plus;</p>
+        </a>
+
+        <!-- User Profile -->
+        <div class="navigation-user">
+            <img id="profile-avatar" alt="User Avatar" src="https://cdn.discordapp.com/embed/avatars/1.png">
+            <a id="profile-activate" class="nowrap" href="/api/oauth2">Anonymous</a>
+        </div>
+
+    </div>
+
+    <!-- Video Player -->
+    <div class="player">
+        <button id="player-close">&times;</button>
+        <div class="wrapper-video centered">
+            <video id="player-video" controls autoplay></video>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <!-- User Alerts -->
+        <div id="alert-login" class="widget-alert centered poppin" hidden>
+            <p>Login with Discord to begin uploading!</p>
+        </div>
+        <div id="alert-newbie" class="widget-alert centered poppin" hidden>
+            <p>Click <a href="javascript:beginUpload()">here</a> to start uploading your first video!</p>
+            <p style="color: lightgray;">Or click on the (+) in the corner</p>
+        </div>
+        <div id="alert-error" class="widget-alert centered poppin" hidden>
+            <p style="color: var(--text-error);">An Error Has Occurred</p>
+            <p id="alert-error-message"></p>
+        </div>
+        <!-- User Uploads -->
+        <div class="widget-videos"></div>
+    </div>
+    <script>
+        // @ts-check
+        {
+            const FILENAME_VIDEO = "{{filename_video}}"
+            const FILENAME_THUMB = "{{filename_thumb}}"
+
+            /** 
+             * Make a Request to the API with Credentials, either returns a JSON object or Error instance
+             * @param {string} path
+             * @param {RequestInit=} options
+             * @returns {Promise<object | Error>}
+             */
+            const API = (path, options) => new Promise(ok => {
+                fetch(path, Object.assign({ credentials: "include" }, options))
+                    .then(async resp => {
+                        const body = await resp.text()
+                        if (resp.status >= 200 && resp.status < 300) {
+                            try {
+                                ok(JSON.parse(body))
+                            } catch (err) {
+                                console.error(err, body)
+                                ok(new Error("Server returned an Invalid Response"))
+                            }
+                        } else {
+                            console.error(resp.statusText, body)
+                            ok(new Error(body || `Server Responded with "${resp.status} ${resp.statusText}"`))
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err)
+                        ok(new Error("Network Error"))
+                    })
+            })
+
+            /** @type {Array<VideoElement>} **/
+            const videos = []
+            const getVideo = i => (videos.find(e => e.id === i && e.dead === false) || new VideoElement(i))
+            class VideoElement {
+
+                id = `temp-${Date.now()}`
+                dead = false
+                #container = document.createElement("div")
+                #thumbnail = document.createElement("img")
+                #progress = document.createElement("div")
+                #progressTooltip = document.createElement("p")
+                #progressBackground = document.createElement("div")
+                #progressForeground = document.createElement("div")
+                #details = document.createElement("div")
+                #detailsTooltip = document.createElement("p")
+
+                constructor(givenId) {
+                    if (givenId) this.id = givenId
+                    this.#container.classList.add("item-video")
+                    this.#thumbnail.classList.add("video-thumbnail")
+                    this.#container.append(this.#thumbnail)
+                    this.#progress.classList.add("video-processing")
+                    this.#progressBackground.classList.add("video-progress-background")
+                    this.#progressForeground.classList.add("video-progress-foreground")
+                    this.#progressBackground.append(this.#progressForeground)
+                    this.#progress.append(this.#progressTooltip)
+                    this.#progress.append(this.#progressBackground)
+                    this.#container.append(this.#progress)
+                    this.#details.classList.add("video-details")
+                    this.#details.append(this.#detailsTooltip)
+                    this.#container.append(this.#details)
+
+                    const container = document.querySelector(".widget-videos")
+                    if (!container) {
+                        throw "Missing Video Widget"
+                    }
+                    container.prepend(this.#container)
+                    videos.push(this)
+                }
+
+                showProgress(enabled) {
+                    this.#progress.style.opacity = enabled ? "1" : "0"
+                    return this
+                }
+                setProgress(message, percent) {
+                    this.#progressTooltip.textContent = `${message} ${percent}%`
+                    this.#progressForeground.style.width = `${percent}%`
+                    return this
+                }
+                showThumbnail() {
+                    this.#thumbnail.alt = `Thumbnail for Video ID ${this.id}`
+                    this.#thumbnail.src = `/public/${this.id}/preview.webp`
+                    this.#thumbnail.style.opacity = "1"
+                    return this
+                }
+                setDetails(message) {
+                    this.#detailsTooltip.textContent = message
+                    return this
+                }
+                setInteractive(enabled) {
+                    this.#container.onclick = enabled
+                        ? () => openPlayer(this.id, true)
+                        : () => { }
+                    return this
+                }
+                setId(givenId) {
+                    this.id = givenId
+                    return this
+                }
+                getId() {
+                    return this.id
+                }
+                kill() {
+                    this.dead = true
+                    this.#container.remove()
+                }
+            }
+
+            /** Prompt the User to Upload a File */
+            function beginUpload() {
+                const input = document.querySelector("#upload-input")
+                const progress = document.querySelector("#progress")
+
+                if (input instanceof HTMLInputElement) {
+                    input.addEventListener("change", () => {
+                        if (!input.files) return
+                        const file = input.files.item(0)
+                        if (!file) {
+                            console.warn("Upload Error: No File Selected")
+                            return
+                        }
+
+                        const elem = getVideo().showProgress(true)
+                        const form = new FormData()
+                        form.append("video", file, file.name)
+
+                        const xhr = new XMLHttpRequest()
+                        xhr.upload.addEventListener("progress", ev => {
+                            elem.setProgress("Uploading", ((ev.loaded / ev.total) * 100) | 0)
+                        })
+                        xhr.addEventListener("loadend", ev => {
+                            const videoID = JSON.parse(xhr.response)
+                            console.log("Upload Video:", videoID)
+                            elem.setId(videoID).setProgress("Queued")
+                        })
+                        xhr.addEventListener("error", err => {
+                            console.error("Upload Error:", xhr.statusText, xhr.response, err)
+                            elem.setProgress("Upload Error", 0)
+                        })
+                        xhr.open("POST", "/api/videos", true)
+                        xhr.send(form)
+
+                        input.value = ""
+                        document.querySelector("#alert-newbie")?.setAttribute("hidden", "true")
+                    })
+                    input.click()
+                }
+            }
+
+            const openPlayer = (() => {
+                /** @type {HTMLDivElement | null} */
+                const playerContainer = document.querySelector(".player")
+                /** @type {HTMLButtonElement | null} */
+                const playerClose = document.querySelector("#player-close")
+                /** @type {HTMLVideoElement | null} */
+                const playerVideo = document.querySelector("#player-video")
+
+                if (!playerVideo || !playerClose || !playerContainer) {
+                    console.error("Missing Player Widget")
+                    return () => { }
+                }
+
+                // Update Video Volume
+                playerVideo.volume = parseFloat(localStorage.getItem("volume") || "0.5")
+                playerVideo.addEventListener("volumechange", () => {
+                    localStorage.setItem("volume", playerVideo.volume.toString())
+                })
+                const open = async (id, skipCheck = false) => {
+
+                    // Ensure Video Exists
+                    if (!skipCheck && id) {
+                        const info = await API(`/api/videos/${id}`)
+                        if (info instanceof Error) {
+                            alert(info.message)
+                            return
+                        }
+                    }
+
+                    // Update Video Source
+                    if (id !== undefined) {
+                        playerVideo.src = `/public/${id}/${FILENAME_VIDEO}`
+                        playerVideo.poster = `/public/${id}/${FILENAME_VIDEO}`
+                        if (navigator.userActivation.isActive) {
+                            playerVideo.play()
+                        }
+                        playerContainer.style.display = "block"
+                        playerContainer.style.opacity = "1"
+                        history.pushState({}, `Clips (${id})`, `/${id}`)
+                    } else {
+                        setTimeout(() => {
+                            playerVideo.src = ""
+                            playerVideo.poster = ""
+                            playerContainer.style.display = "none"
+                        }, 200)
+                        playerContainer.style.opacity = "0"
+                        history.pushState({}, 'Clips', '/')
+                    }
+                }
+
+                // Display Player if Video ID is in the URL
+                const path = location.pathname.replace("/", "")
+                const match = new RegExp(`^([A-z0-9]{11})$`)
+                if (match.test(path)) {
+                    open(path)
+                }
+                playerClose.addEventListener("click", () => open())
+                playerContainer.addEventListener("click", ev => ev.target === playerContainer && open())
+                return open
+            })()
+
+            // Display User Profile
+            API("/api/users/@me").then(u => {
+                if (u instanceof Error) {
+                    document.querySelector("#alert-login")?.removeAttribute("hidden")
+                    return
+                }
+                document.querySelector("#upload-activate")?.removeAttribute("hidden")
+
+                // Display User Profile
+                const uAvatar = document.querySelector("#profile-avatar")
+                if (!uAvatar) {
+                    throw "Missing Profile Avatar Element"
+                }
+                if (uAvatar instanceof HTMLImageElement) {
+                    uAvatar.src = "https://cdn.discordapp.com/" + (
+                        u.avatar
+                            ? `avatars/${u.id}/${u.avatar}.png?size=48`
+                            : `embed/avatars/${(BigInt(u.id) >> BigInt(22)) % BigInt(6)}.png`
+                    )
+                }
+
+                // Display User Name
+                const uActive = document.querySelector("#profile-activate")
+                if (!uActive) {
+                    throw "Missing Profile Activate Element"
+                }
+                if (uActive instanceof HTMLAnchorElement) {
+                    const ctx = document.createElement("canvas").getContext("2d")
+                    if (ctx) {
+                        ctx.font = `16px Poppins, sans-serif`
+                        uActive.style.width = `${ctx.measureText(u.name).width + 16 | 0}px`
+                        uActive.textContent = u.name
+                        uActive.href = "/api/logout"
+                        ctx.canvas.remove()
+                    }
+                }
+
+                // Handle Live Updates
+                const source = new EventSource("/api/events", { withCredentials: true })
+                source.onerror = e => console.error("Event Error:", e)
+                source.onmessage = e => {
+                    // Parse Expected JSON Message
+                    let message
+                    try {
+                        message = JSON.parse(e.data)
+                        console.log("Event:", message.t, message.s, message.d)
+                    } catch (err) {
+                        console.error("Server sent an Invalid or Malformed JSON Event", err, e)
+                        return
+                    }
+
+                    // Handle Message Appropriately
+                    if (message.t === "VIDEO_PROCESSING_ERROR") getVideo(message.s)
+                        .showProgress(true)
+                        .setProgress("Error: " + message.d, 0)
+
+                    if (message.t === "VIDEO_PROCESSING_BEGIN") getVideo(message.s)
+                        .showProgress(true)
+                        .setProgress("Preparing", 0)
+
+                    if (message.t === "VIDEO_PROCESSING_PROGRESS") getVideo(message.s)
+                        .showProgress(true)
+                        .setProgress("Processing", message.d)
+
+                    if (message.t === "VIDEO_PROCESSING_COMPLETE") getVideo(message.s)
+                        .showThumbnail()
+                        .setDetails(`Uploaded: ${message.d}`)
+                        .setInteractive(true)
+                        .showProgress(false)
+                }
+
+                // Display User Videos
+                API("/api/videos").then(v => {
+                    if (v instanceof Error) {
+                        document.querySelector("#alert-error")?.removeAttribute("hidden")
+                        const p = document.querySelector("#alert-error-message")
+                        if (p instanceof HTMLParagraphElement) {
+                            p.textContent = (v?.message || `${v}`)
+                        }
+                        return
+                    }
+                    if (v.length === 0) {
+                        document.querySelector("#alert-newbie")?.removeAttribute("hidden")
+                        return
+                    }
+                    for (const i of v) {
+                        if (i.status === "ERROR") getVideo(i.id)
+                            .showProgress(true)
+                            .setProgress("Errored", 100)
+
+                        if (i.status === "QUEUE") getVideo(i.id)
+                            .showProgress(true)
+                            .setProgress("Queued", 0)
+
+                        if (i.status === "PROCESS") getVideo(i.id)
+                            .showProgress(true)
+                            .setProgress("Processing", 0)
+
+                        if (i.status === "FINISH") getVideo(i.id)
+                            .showThumbnail()
+                            .setDetails(`Uploaded: ${i.created}`)
+                            .setInteractive(true)
+                    }
+                })
+
+            })
+        }
+    </script>
+</body>
+
+</html>
